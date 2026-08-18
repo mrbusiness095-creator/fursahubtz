@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/fursa/AppShell";
-import { SUPPORT_NUMBER } from "@/lib/fursa-data";
+import { SUPPORT_NUMBER, SUPPORT_MESSAGE } from "@/lib/fursa-data";
+import csAvatar from "@/assets/cs-avatar.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,6 +29,8 @@ const SERVICES = [
     title: "CHAT & EARN",
     sub: "Chat, Connect & Earn",
     desc: "Chati na wageni kutoka nje na upate malipo.",
+    theme: "chat",
+    blink: "animate-blink",
   },
   {
     to: "/mikopo",
@@ -35,6 +38,8 @@ const SERVICES = [
     title: "PATA MKOPO",
     sub: "Omba Mkopo kwa Urahisi",
     desc: "Mikopo ya haraka bila usumbufu.",
+    theme: "loan",
+    blink: "animate-blink-delay-1",
   },
   {
     to: "/ajira-nje",
@@ -42,6 +47,8 @@ const SERVICES = [
     title: "AJIRA NJE",
     sub: "Find Jobs Around the World",
     desc: "Nafasi za kazi UAE, Canada, UK na zaidi.",
+    theme: "job",
+    blink: "animate-blink-delay-2",
   },
 ] as const;
 
