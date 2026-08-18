@@ -58,9 +58,14 @@ function Index() {
     <AppShell>
       <header className="bg-gradient-green px-5 pt-10 pb-16 text-primary-foreground">
         <div className="flex items-center gap-3">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary-foreground/15 text-2xl">
-            🌍
-          </div>
+          <img
+            src={logoAsset.url}
+            alt="FursaHub Logo"
+            width={48}
+            height={48}
+            className="h-12 w-12 shrink-0 rounded-2xl object-contain bg-primary-foreground/15 p-1.5"
+            loading="eager"
+          />
           <div className="min-w-0">
             <p className="text-2xl font-extrabold tracking-tight">FursaHub</p>
             <p className="text-xs text-primary-foreground/80">Karibu kwenye fursa zako</p>
