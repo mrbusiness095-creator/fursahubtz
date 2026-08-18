@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/fursa/AppShell";
 import { SUPPORT_NUMBER, SUPPORT_MESSAGE } from "@/lib/fursa-data";
 import csAvatar from "@/assets/cs-avatar.png";
+import logoAsset from "@/assets/fursahub-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
