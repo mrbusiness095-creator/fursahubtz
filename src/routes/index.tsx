@@ -75,23 +75,46 @@ function Index() {
       </header>
 
       <main className="-mt-9 space-y-4 px-4">
-        {SERVICES.map((s) => (
-          <Link
-            key={s.to}
-            to={s.to}
-            className="flex items-center gap-4 rounded-3xl bg-card p-4 shadow-card"
-          >
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-secondary text-2xl">
-              {s.icon}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-extrabold text-primary">{s.title}</p>
-              <p className="truncate text-[13px] font-semibold text-foreground">{s.sub}</p>
-              <p className="truncate text-xs text-muted-foreground">{s.desc}</p>
-            </div>
-            <span className="shrink-0 text-lg text-primary">›</span>
-          </Link>
-        ))}
+        {SERVICES.map((s) => {
+          const themeClasses = {
+            chat: {
+              iconBg: "bg-chat-card-light text-chat-card",
+              text: "text-chat-card",
+              gradient: "bg-gradient-chat",
+            },
+            loan: {
+              iconBg: "bg-loan-card-light text-loan-card",
+              text: "text-loan-card",
+              gradient: "bg-gradient-loan",
+            },
+            job: {
+              iconBg: "bg-job-card-light text-job-card",
+              text: "text-job-card",
+              gradient: "bg-gradient-job",
+            },
+          }[s.theme];
+          return (
+            <Link
+              key={s.to}
+              to={s.to}
+              className={`${s.blink} flex items-center gap-4 rounded-3xl bg-card p-4 shadow-card transition-transform active:scale-[0.98]`}
+            >
+              <div
+                className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-2xl ${themeClasses.iconBg}`}
+              >
+                {s.icon}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className={`truncate text-sm font-extrabold ${themeClasses.text}`}>
+                  {s.title}
+                </p>
+                <p className="truncate text-[13px] font-semibold text-foreground">{s.sub}</p>
+                <p className="truncate text-xs text-muted-foreground">{s.desc}</p>
+              </div>
+              <span className={`shrink-0 text-lg ${themeClasses.text}`}>›</span>
+            </Link>
+          );
+        })}
 
         <section className="grid grid-cols-3 gap-3 pt-2">
           {[
