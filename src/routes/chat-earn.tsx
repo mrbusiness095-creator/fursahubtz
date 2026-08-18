@@ -20,7 +20,7 @@ export const Route = createFileRoute("/chat-earn")({
       },
     ],
   }),
-  component: ChatEarnPage;
+  component: ChatEarnPage,
 });
 
 function ChatEarnPage() {
