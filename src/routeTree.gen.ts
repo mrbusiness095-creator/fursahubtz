@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatEarnRouteImport } from './routes/chat-earn'
 import { Route as MikopoRouteImport } from './routes/mikopo'
+import { Route as AjiraNjeIndexRouteImport } from './routes/ajira-nje.index'
 import { Route as ChatSeedRouteImport } from './routes/chat.$seed'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const MikopoRoute = MikopoRouteImport.update({
   path: '/mikopo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AjiraNjeIndexRoute = AjiraNjeIndexRouteImport.update({
+  id: '/ajira-nje/',
+  path: '/ajira-nje/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatSeedRoute = ChatSeedRouteImport.update({
   id: '/chat/$seed',
   path: '/chat/$seed',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/chat-earn': typeof ChatEarnRoute
   '/mikopo': typeof MikopoRoute
   '/chat/$seed': typeof ChatSeedRoute
+  '/ajira-nje/': typeof AjiraNjeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat-earn': typeof ChatEarnRoute
   '/mikopo': typeof MikopoRoute
   '/chat/$seed': typeof ChatSeedRoute
+  '/ajira-nje': typeof AjiraNjeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,15 @@ export interface FileRoutesById {
   '/chat-earn': typeof ChatEarnRoute
   '/mikopo': typeof MikopoRoute
   '/chat/$seed': typeof ChatSeedRoute
+  '/ajira-nje/': typeof AjiraNjeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat-earn' | '/mikopo' | '/chat/$seed'
+  fullPaths: '/' | '/chat-earn' | '/mikopo' | '/chat/$seed' | '/ajira-nje/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat-earn' | '/mikopo' | '/chat/$seed'
-  id: '__root__' | '/' | '/chat-earn' | '/mikopo' | '/chat/$seed'
+  to: '/' | '/chat-earn' | '/mikopo' | '/chat/$seed' | '/ajira-nje'
+  id:
+    '__root__' | '/' | '/chat-earn' | '/mikopo' | '/chat/$seed' | '/ajira-nje/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +77,7 @@ export interface RootRouteChildren {
   ChatEarnRoute: typeof ChatEarnRoute
   MikopoRoute: typeof MikopoRoute
   ChatSeedRoute: typeof ChatSeedRoute
+  AjiraNjeIndexRoute: typeof AjiraNjeIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,6 +103,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MikopoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ajira-nje/': {
+      id: '/ajira-nje/'
+      path: '/ajira-nje'
+      fullPath: '/ajira-nje/'
+      preLoaderRoute: typeof AjiraNjeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat/$seed': {
       id: '/chat/$seed'
       path: '/chat/$seed'
@@ -107,6 +125,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatEarnRoute: ChatEarnRoute,
   MikopoRoute: MikopoRoute,
   ChatSeedRoute: ChatSeedRoute,
+  AjiraNjeIndexRoute: AjiraNjeIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
