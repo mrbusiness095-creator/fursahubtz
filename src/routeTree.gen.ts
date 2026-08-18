@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatEarnRouteImport } from './routes/chat-earn'
+import { Route as ChatSeedRouteImport } from './routes/chat.$seed'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const ChatEarnRoute = ChatEarnRouteImport.update({
   path: '/chat-earn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatSeedRoute = ChatSeedRouteImport.update({
+  id: '/chat/$seed',
+  path: '/chat/$seed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat-earn': typeof ChatEarnRoute
+  '/chat/$seed': typeof ChatSeedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat-earn': typeof ChatEarnRoute
+  '/chat/$seed': typeof ChatSeedRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/chat-earn': typeof ChatEarnRoute
+  '/chat/$seed': typeof ChatSeedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat-earn'
+  fullPaths: '/' | '/chat-earn' | '/chat/$seed'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat-earn'
-  id: '__root__' | '/' | '/chat-earn'
+  to: '/' | '/chat-earn' | '/chat/$seed'
+  id: '__root__' | '/' | '/chat-earn' | '/chat/$seed'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatEarnRoute: typeof ChatEarnRoute
+  ChatSeedRoute: typeof ChatSeedRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatEarnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat/$seed': {
+      id: '/chat/$seed'
+      path: '/chat/$seed'
+      fullPath: '/chat/$seed'
+      preLoaderRoute: typeof ChatSeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatEarnRoute: ChatEarnRoute,
+  ChatSeedRoute: ChatSeedRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
