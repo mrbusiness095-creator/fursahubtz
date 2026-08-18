@@ -74,7 +74,7 @@ export function rngFromSeed(seed: string) {
 
 export function profileFromSeed(seed: string): Profile {
   const r = rngFromSeed(seed);
-  const pick = <T,>(arr: T[]): T => arr[Math.floor(r() * arr.length)];
+  const pick = <T,>(arr: T[]): T => arr[Math.floor(r() * arr.length)]!;
   const c = pick(COUNTRIES);
   const minutes = 10 + Math.floor(r() * 11) * 5;
   const amount = Math.round((minutes * (900 + r() * 500)) / 500) * 500;
