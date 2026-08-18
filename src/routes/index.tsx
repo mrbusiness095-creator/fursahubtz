@@ -1,24 +1,119 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { AppShell } from "@/components/fursa/AppShell";
+import { SUPPORT_NUMBER } from "@/lib/fursa-data";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "FursaHub — Fursa za Kipato, Mikopo na Ajira" },
+      {
+        name: "description",
+        content:
+          "FursaHub inakuunganisha na fursa za kipato kwa kuchati, mikopo ya haraka na ajira za nje ya nchi.",
+      },
+      { property: "og:title", content: "FursaHub — Fursa za Kipato, Mikopo na Ajira" },
+      {
+        property: "og:description",
+        content: "Chat & Earn, Pata Mkopo na Ajira Nje — yote sehemu moja.",
+      },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
+const SERVICES = [
+  {
+    to: "/chat-earn",
+    icon: "💬",
+    title: "CHAT & EARN",
+    sub: "Chat, Connect & Earn",
+    desc: "Chati na wageni kutoka nje na upate malipo.",
+  },
+  {
+    to: "/mikopo",
+    icon: "💰",
+    title: "PATA MKOPO",
+    sub: "Omba Mkopo kwa Urahisi",
+    desc: "Mikopo ya haraka bila usumbufu.",
+  },
+  {
+    to: "/ajira-nje",
+    icon: "🌍",
+    title: "AJIRA NJE",
+    sub: "Find Jobs Around the World",
+    desc: "Nafasi za kazi UAE, Canada, UK na zaidi.",
+  },
+] as const;
+
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <AppShell>
+      <header className="bg-gradient-green px-5 pt-10 pb-16 text-primary-foreground">
+        <div className="flex items-center gap-3">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary-foreground/15 text-2xl">
+            🌍
+          </div>
+          <div className="min-w-0">
+            <p className="text-2xl font-extrabold tracking-tight">FursaHub</p>
+            <p className="text-xs text-primary-foreground/80">Karibu kwenye fursa zako</p>
+          </div>
+        </div>
+        <h1 className="mt-6 text-[26px] leading-tight font-extrabold">
+          Fursa za Kipato, Mikopo na Ajira Duniani.
+        </h1>
+        <p className="mt-2 text-sm text-primary-foreground/85">
+          Jiunge na maelfu ya Watanzania wanaotumia FursaHub kupata kipato, mikopo na ajira za
+          kimataifa.
+        </p>
+      </header>
+
+      <main className="-mt-9 space-y-4 px-4">
+        {SERVICES.map((s) => (
+          <Link
+            key={s.to}
+            to={s.to}
+            className="flex items-center gap-4 rounded-3xl bg-card p-4 shadow-card"
+          >
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-secondary text-2xl">
+              {s.icon}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-extrabold text-primary">{s.title}</p>
+              <p className="truncate text-[13px] font-semibold text-foreground">{s.sub}</p>
+              <p className="truncate text-xs text-muted-foreground">{s.desc}</p>
+            </div>
+            <span className="shrink-0 text-lg text-primary">›</span>
+          </Link>
+        ))}
+
+        <section className="grid grid-cols-3 gap-3 pt-2">
+          {[
+            { v: "12,480+", l: "Watumiaji" },
+            { v: "TZS 89M", l: "Zimelipwa" },
+            { v: "320+", l: "Ajira" },
+          ].map((x) => (
+            <div key={x.l} className="rounded-2xl bg-card p-3 text-center shadow-card">
+              <p className="text-sm font-extrabold text-primary">{x.v}</p>
+              <p className="text-[10px] text-muted-foreground">{x.l}</p>
+            </div>
+          ))}
+        </section>
+
+        <a
+          href={`sms:${SUPPORT_NUMBER}`}
+          className="mt-2 flex items-center justify-between rounded-3xl bg-card p-4 shadow-card"
+        >
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-foreground">Unahitaji msaada?</p>
+            <p className="truncate text-xs text-muted-foreground">
+              Tuma SMS kwa {SUPPORT_NUMBER}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-full bg-secondary px-3 py-1.5 text-xs font-bold text-primary">
+            Wasiliana
+          </span>
+        </a>
+      </main>
+    </AppShell>
   );
 }
