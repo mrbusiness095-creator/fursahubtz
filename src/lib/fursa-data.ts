@@ -1,5 +1,7 @@
 export const REGISTER_URL = "https://kozenasite.site/register?ref=Ricious";
 export const SUPPORT_NUMBER = "0743871339";
+export const SUPPORT_MESSAGE = "Nataka kujua kuhusu Fursahub";
+
 
 export type Profile = {
   seed: string;

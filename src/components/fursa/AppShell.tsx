@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { SUPPORT_NUMBER } from "@/lib/fursa-data";
+import { SUPPORT_NUMBER, SUPPORT_MESSAGE } from "@/lib/fursa-data";
+import csAvatar from "@/assets/cs-avatar.png";
 
 const NAV = [
   { to: "/", label: "Home", icon: "🏠" },
@@ -13,12 +14,25 @@ const NAV = [
 export function CustomerServiceButton() {
   return (
     <a
-      href={`sms:${SUPPORT_NUMBER}`}
+      href={`sms:${SUPPORT_NUMBER}?body=${encodeURIComponent(SUPPORT_MESSAGE)}`}
       aria-label="Customer Service"
-      className="fixed right-4 bottom-24 z-40 flex items-center gap-2 rounded-full bg-gradient-green px-4 py-3 text-sm font-bold text-primary-foreground shadow-float"
+      className="fixed right-3 bottom-24 z-40 flex items-center gap-3 rounded-2xl bg-card p-2.5 pl-3 shadow-float ring-1 ring-primary/20"
     >
-      <span className="text-lg">🎧</span>
-      <span>Customer Service</span>
+      <div className="relative">
+        <img
+          src={csAvatar}
+          alt="Customer Service"
+          width={40}
+          height={40}
+          className="h-10 w-10 rounded-full object-cover ring-2 ring-primary"
+          loading="lazy"
+        />
+        <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 ring-2 ring-card" />
+      </div>
+      <div className="pr-1">
+        <p className="text-xs font-extrabold text-foreground">Msaada</p>
+        <p className="text-[10px] font-semibold text-primary">Customer Service</p>
+      </div>
     </a>
   );
 }
