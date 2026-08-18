@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatEarnRouteImport } from './routes/chat-earn'
+import { Route as MikopoRouteImport } from './routes/mikopo'
 import { Route as ChatSeedRouteImport } from './routes/chat.$seed'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const ChatEarnRoute = ChatEarnRouteImport.update({
   path: '/chat-earn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MikopoRoute = MikopoRouteImport.update({
+  id: '/mikopo',
+  path: '/mikopo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatSeedRoute = ChatSeedRouteImport.update({
   id: '/chat/$seed',
   path: '/chat/$seed',
@@ -32,30 +38,34 @@ const ChatSeedRoute = ChatSeedRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat-earn': typeof ChatEarnRoute
+  '/mikopo': typeof MikopoRoute
   '/chat/$seed': typeof ChatSeedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat-earn': typeof ChatEarnRoute
+  '/mikopo': typeof MikopoRoute
   '/chat/$seed': typeof ChatSeedRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/chat-earn': typeof ChatEarnRoute
+  '/mikopo': typeof MikopoRoute
   '/chat/$seed': typeof ChatSeedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat-earn' | '/chat/$seed'
+  fullPaths: '/' | '/chat-earn' | '/mikopo' | '/chat/$seed'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat-earn' | '/chat/$seed'
-  id: '__root__' | '/' | '/chat-earn' | '/chat/$seed'
+  to: '/' | '/chat-earn' | '/mikopo' | '/chat/$seed'
+  id: '__root__' | '/' | '/chat-earn' | '/mikopo' | '/chat/$seed'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatEarnRoute: typeof ChatEarnRoute
+  MikopoRoute: typeof MikopoRoute
   ChatSeedRoute: typeof ChatSeedRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatEarnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mikopo': {
+      id: '/mikopo'
+      path: '/mikopo'
+      fullPath: '/mikopo'
+      preLoaderRoute: typeof MikopoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat/$seed': {
       id: '/chat/$seed'
       path: '/chat/$seed'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatEarnRoute: ChatEarnRoute,
+  MikopoRoute: MikopoRoute,
   ChatSeedRoute: ChatSeedRoute,
 }
 export const routeTree = rootRouteImport
