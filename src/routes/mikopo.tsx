@@ -71,7 +71,7 @@ function MikopoPage() {
         open={locked}
         onClose={() => setLocked(false)}
         title="Huwezi Kupata Mkopo"
-        message="Huwezi kupata mkopo bila kuwa na Account Active kwenye FursaHub."
+        message="Huwezi kupata mkopo bila kuwa na Account Active kwenye FursaHub. Jisajili kisha Activate account kwa 14,500Tzs Tu."
         backLabel="← Rudi Kwenye Mikopo"
       />
     </AppShell>
