@@ -1,0 +1,6 @@
+# The Nitro Netlify preset emits the static client into `dist` and the SSR
+# handler into `.netlify/functions-internal`, so the publish directory is
+# `dist` (not `dist/client`, which is only produced by other Nitro presets).
+[build]
+  command = "bun run build"
+  publish = "dist"
