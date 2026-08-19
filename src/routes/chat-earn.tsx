@@ -141,7 +141,7 @@ function ChatEarnPage() {
         open={locked}
         onClose={() => setLocked(false)}
         title="Huwezi Kutuma Ujumbe"
-        message="Huwezi kutuma ujumbe au kupata huduma hii kwa sasa mpaka ujisajili kwenye FursaHub."
+        message="Huwezi kutuma ujumbe au kupata huduma hii kwa sasa mpaka kujisajili kwa Mtaji wa 14,500Tzs kwenye FursaHub."
         backLabel="← Rudi Kwenye Chat"
       />
     </AppShell>

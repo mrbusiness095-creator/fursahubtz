@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/fursa/AppShell";
 import { SUPPORT_NUMBER, SUPPORT_MESSAGE } from "@/lib/fursa-data";
 import csAvatar from "@/assets/cs-avatar.png";
-import logoAsset from "@/assets/fursahub-logo.png.asset.json";
+import logoAsset from "@/assets/fursahub-emblem.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -61,9 +61,9 @@ function Index() {
           <img
             src={logoAsset.url}
             alt="FursaHub Logo"
-            width={48}
-            height={48}
-            className="h-12 w-12 shrink-0 rounded-2xl object-contain bg-primary-foreground/15 p-1.5"
+            width={64}
+            height={64}
+            className="h-16 w-16 shrink-0 rounded-2xl object-cover ring-2 ring-primary-foreground/30"
             loading="eager"
           />
           <div className="min-w-0">
