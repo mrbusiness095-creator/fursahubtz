@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/fursa/AppShell";
 import { SUPPORT_NUMBER, SUPPORT_MESSAGE } from "@/lib/fursa-data";
 import csAvatar from "@/assets/cs-avatar.png";
-import logoAsset from "@/assets/fursahub-emblem.png.asset.json";
+import logo from "@/assets/fursahub-emblem.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -59,7 +59,7 @@ function Index() {
       <header className="bg-gradient-green px-5 pt-10 pb-16 text-primary-foreground">
         <div className="flex items-center gap-3">
           <img
-            src={logoAsset.url}
+            src={logo}
             alt="FursaHub Logo"
             width={64}
             height={64}
