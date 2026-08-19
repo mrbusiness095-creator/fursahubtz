@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { SUPPORT_NUMBER, SUPPORT_MESSAGE } from "@/lib/fursa-data";
 import csAvatar from "@/assets/cs-avatar.png";
+import { InstallAppButton } from "./InstallAppButton";
+
 
 const NAV = [
   { to: "/", label: "Home", icon: "🏠" },
@@ -61,11 +63,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background pb-28">
       <div className="mx-auto w-full max-w-md">{children}</div>
+      <InstallAppButton />
       <CustomerServiceButton />
       <BottomNav />
     </div>
   );
 }
+
 
 export function PageHeader({
   title,
