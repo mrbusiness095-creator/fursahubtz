@@ -22,7 +22,7 @@ function answerFor(question: string) {
     return "Kutoa pesa ni kuanzia TZS 50,000.";
   }
   if (q.includes("malip") || q.includes("dashboard") || q.includes("push")) {
-    return "Baada ya Malipo kuthibitishwa kwa mafanikio, utaelekezwa kwenye Dashboard na unaweza kuendelea kuchat.";
+    return "Baada ya Mobilipa kuthibitisha malipo yako kwa mafanikio, utaelekezwa kwenye Dashboard na unaweza kuendelea kuchat.";
   }
   return "Nimekuelewa. Chagua swali hapo juu au niandikie swali kuhusu usajili, Activation fee, malipo au Withdrawal.";
 }
@@ -52,7 +52,7 @@ export function FursaHubAssistance() {
     <>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-24 right-3 z-50 flex items-center gap-2 rounded-full bg-gradient-green px-4 py-3 text-xs font-extrabold text-primary-foreground shadow-float"
+        className="fixed bottom-24 right-3 z-30 flex items-center gap-2 rounded-full bg-gradient-green px-4 py-3 text-xs font-extrabold text-primary-foreground shadow-float"
         aria-label="FURSAHUB ASSISTANCE"
       >
         <span className="relative">
