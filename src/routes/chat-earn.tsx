@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/fursa/AppShell";
 import { RegisterDialog } from "@/components/fursa/RegisterDialog";
 import { generateProfiles, money, type Profile } from "@/lib/fursa-data";
+import { getFursaUser, MIN_WITHDRAWAL } from "@/lib/fursa-auth";
 
 export const Route = createFileRoute("/chat-earn")({
   head: () => ({
@@ -28,6 +29,14 @@ function ChatEarnPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [liveUsers, setLiveUsers] = useState(1284);
   const [locked, setLocked] = useState(false);
+  const [user, setUser] = useState(getFursaUser());
+
+  useEffect(() => {
+    const sync = () => setUser(getFursaUser());
+    window.addEventListener("fursahub-user-updated", sync);
+    window.addEventListener("storage", sync);
+    return () => { window.removeEventListener("fursahub-user-updated", sync); window.removeEventListener("storage", sync); };
+  }, []);
 
   useEffect(() => {
     setProfiles(generateProfiles(14));
@@ -59,13 +68,13 @@ function ChatEarnPage() {
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <div className="min-w-0">
               <p className="text-[11px] text-primary-foreground/80">Current Balance</p>
-              <p className="truncate text-2xl font-extrabold">TZS 0</p>
+              <p className="truncate text-2xl font-extrabold">TZS {(user?.balance ?? 0).toLocaleString()}</p>
             </div>
             <button
-              onClick={() => setLocked(true)}
+              onClick={() => { if (user?.paid && user.balance >= MIN_WITHDRAWAL) navigate({ to: "/dashboard" }); else setLocked(true); }}
               className="shrink-0 rounded-2xl bg-primary-foreground px-4 py-2.5 text-xs font-extrabold text-primary"
             >
-              Withdraw
+              {user?.balance && user.balance >= MIN_WITHDRAWAL ? "Withdraw" : `Withdraw ≥ ${MIN_WITHDRAWAL.toLocaleString()}`}
             </button>
           </div>
         </div>
@@ -140,8 +149,8 @@ function ChatEarnPage() {
       <RegisterDialog
         open={locked}
         onClose={() => setLocked(false)}
-        title="Huwezi Kutuma Ujumbe"
-        message="Huwezi kutuma ujumbe au kupata huduma hii kwa sasa mpaka kujisajili kwa Mtaji wa 14,500Tzs kwenye FursaHub."
+        title="Withdrawal"
+        message="Withdrawal inaruhusiwa kuanzia TZS 50,000. Ukifikisha kiasi hicho, fungua Dashboard kuendelea na Withdrawal."
         backLabel="← Rudi Kwenye Chat"
       />
     </AppShell>

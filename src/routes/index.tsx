@@ -1,7 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/fursa/AppShell";
-import { SUPPORT_NUMBER, SUPPORT_MESSAGE } from "@/lib/fursa-data";
-import csAvatar from "@/assets/cs-avatar.png";
 import logo from "@/assets/fursahub-emblem.png";
 
 export const Route = createFileRoute("/")({
@@ -135,28 +133,7 @@ function Index() {
           ))}
         </section>
 
-        <a
-          href={`sms:${SUPPORT_NUMBER}?body=${encodeURIComponent(SUPPORT_MESSAGE)}`}
-          className="mt-2 flex items-center gap-3 rounded-3xl bg-card p-4 shadow-card"
-        >
-          <img
-            src={csAvatar}
-            alt="Customer Service"
-            width={44}
-            height={44}
-            className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-primary/20"
-            loading="lazy"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-foreground">Unahitaji msaada?</p>
-            <p className="truncate text-xs text-muted-foreground">
-              Tuma SMS kwa {SUPPORT_NUMBER}
-            </p>
-          </div>
-          <span className="shrink-0 rounded-full bg-gradient-green px-3 py-1.5 text-xs font-bold text-primary-foreground">
-            Wasiliana
-          </span>
-        </a>
+
       </main>
     </AppShell>
   );

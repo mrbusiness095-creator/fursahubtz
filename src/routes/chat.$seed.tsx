@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { RegisterDialog } from "@/components/fursa/RegisterDialog";
 import { money, profileFromSeed } from "@/lib/fursa-data";
+import { getFursaUser, markSessionEarned, isSessionEarned, updateFursaUser } from "@/lib/fursa-auth";
+import { FursaHubAssistance } from "@/components/fursa/FursaHubAssistance";
 
 export const Route = createFileRoute("/chat/$seed")({
   head: () => ({
@@ -35,6 +37,7 @@ function ChatRoom() {
   ]);
   const [text, setText] = useState("");
   const [locked, setLocked] = useState(false);
+  const [user, setUser] = useState(getFursaUser());
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,10 +45,27 @@ function ChatRoom() {
   }, [messages]);
 
   const send = () => {
-    if (!text.trim()) return;
-    setMessages((m) => [...m, { from: "me", text: text.trim() }]);
+    const clean = text.trim();
+    if (!clean) return;
+    const current = getFursaUser();
+    if (!current) {
+      setLocked(true);
+      return;
+    }
+    if (!current.paid) {
+      window.location.href = "/payment";
+      return;
+    }
+
+    const mine = messages.filter((m) => m.from === "me").length + 1;
+    setMessages((m) => [...m, { from: "me", text: clean }]);
     setText("");
-    setLocked(true);
+
+    if (mine >= 10 && !isSessionEarned(seed)) {
+      markSessionEarned(seed);
+      updateFursaUser({ balance: current.balance + p.amount, chats: current.chats + 1 });
+      setMessages((m) => [...m, { from: "them", text: `Hongera 🎉 Umekamilisha ujumbe 10. Malipo ya session ya ${money(p.amount)} yameongezwa kwenye Balance yako.` }]);
+    }
   };
 
   return (
@@ -118,10 +138,11 @@ function ChatRoom() {
       <RegisterDialog
         open={locked}
         onClose={() => setLocked(false)}
-        title="Huwezi Kutuma Ujumbe"
-        message="Huwezi kutuma ujumbe au kupata huduma hii kwa sasa mpaka kujisajili kwa Mtaji wa 14,500Tzs kwenye FursaHub."
+        title="Jisajili kwanza"
+        message="Huwezi kutuma ujumbe mpaka ujisajili. Gusa Jisajili Sasa, jaza taarifa zako na kisha lipia Activation fee ya TZS 14,500 kwa Push."
         backLabel="← Rudi Kwenye Chat"
       />
+      <FursaHubAssistance />
     </div>
   );
 }
