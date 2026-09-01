@@ -22,7 +22,7 @@ function answerFor(question: string) {
     return "Kutoa pesa ni kuanzia TZS 50,000.";
   }
   if (q.includes("malip") || q.includes("dashboard") || q.includes("push")) {
-    return "Baada ya Mobilipa kuthibitisha malipo yako kwa mafanikio, utaelekezwa kwenye Dashboard na unaweza kuendelea kuchat.";
+    return "Baada ya Malipo kuthibitishwa kwa mafanikio, utaelekezwa kwenye Dashboard na unaweza kuendelea kuchat.";
   }
   return "Nimekuelewa. Chagua swali hapo juu au niandikie swali kuhusu usajili, Activation fee, malipo au Withdrawal.";
 }
