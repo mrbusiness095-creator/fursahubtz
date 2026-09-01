@@ -1,4 +1,4 @@
-import { REGISTER_URL } from "@/lib/fursa-data";
+import { Link } from "@tanstack/react-router";
 
 export function RegisterDialog({
   open,
@@ -22,14 +22,13 @@ export function RegisterDialog({
         </div>
         <h2 className="mt-4 text-lg font-extrabold text-foreground">{title}</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{message}</p>
-        <a
-          href={REGISTER_URL}
-          target="_blank"
-          rel="noreferrer"
+        <Link
+          to="/register"
+          onClick={onClose}
           className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-green px-4 py-3.5 text-sm font-bold text-primary-foreground shadow-card"
         >
           👤 Jisajili Sasa
-        </a>
+        </Link>
         <button
           onClick={onClose}
           className="mt-3 w-full rounded-2xl border border-border bg-muted px-4 py-3 text-sm font-semibold text-foreground"

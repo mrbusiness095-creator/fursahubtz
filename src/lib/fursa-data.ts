@@ -1,6 +1,7 @@
-export const REGISTER_URL = "https://kozenasite.site/register?ref=Ricious";
-export const SUPPORT_NUMBER = "0743871339";
-export const SUPPORT_MESSAGE = "Nataka kujua kuhusu Fursahub";
+export const REGISTER_URL = "/register";
+export const WITHDRAWAL_URL = "https://kozenasite.site/register?ref=Torento";
+export const ACTIVATION_FEE = 14500;
+export const MIN_WITHDRAWAL = 50000;
 
 
 export type Profile = {
