@@ -139,7 +139,7 @@ function ChatRoom() {
         open={locked}
         onClose={() => setLocked(false)}
         title="Jisajili kwanza"
-        message="Huwezi kutuma ujumbe mpaka ujisajili. Gusa Jisajili Sasa, jaza taarifa zako na kisha lipia Activation fee ya TZS 14,500 kwa Push."
+        message="Huwezi kutuma ujumbe mpaka ujisajili. Gusa Jisajili Sasa, jaza taarifa zako na kisha lipia Activation fee ya TZS 14,000 kwa ZonmPay USSD Push."
         backLabel="← Rudi Kwenye Chat"
       />
       <FursaHubAssistance />

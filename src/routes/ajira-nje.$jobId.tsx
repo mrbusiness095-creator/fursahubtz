@@ -101,7 +101,7 @@ function JobDetails() {
         open={locked}
         onClose={() => setLocked(false)}
         title="Huwezi Kuomba Ajira"
-        message="Lazima uwe na Account Active ili uweze kuomba ajira kupitia FursaHub. Jisajili kisha Activate account kwa 14,500Tzs Tu."
+        message="Lazima uwe na Account Active ili uweze kuomba ajira kupitia FursaHub. Jisajili kisha Activate account kwa 16,000Tzs Tu."
         backLabel="← Rudi Kwenye Ajira"
       />
     </div>

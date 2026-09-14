@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ACTIVATION_FEE, getFursaUser, saveFursaUser, type FursaUser } from "@/lib/fursa-auth";
+import { useServerFn } from "@tanstack/react-start";
+import { ACTIVATION_FEES, getFursaUser, saveFursaUser, SERVICE_LABELS, type ActivationService, type FursaUser } from "@/lib/fursa-auth";
+import { registerFursaUser } from "@/lib/zonmpay.functions";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -25,7 +27,8 @@ const COUNTRIES = [
 
 function RegisterPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", username: "", phone: "", email: "", country: "tz", password: "", confirm: "" });
+  const registerOnServer = useServerFn(registerFursaUser);
+  const [form, setForm] = useState<{name:string;username:string;phone:string;email:string;country:string;password:string;confirm:string;service:ActivationService}>({ name: "", username: "", phone: "", email: "", country: "tz", password: "", confirm: "", service: "chat" });
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +39,7 @@ function RegisterPage() {
 
   const set = (k: keyof typeof form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     if (form.password.length < 6) {
@@ -52,16 +55,17 @@ function RegisterPage() {
       return;
     }
 
-    const user: FursaUser = {
-      ...form,
-      paid: false,
-      balance: 0,
-      chats: 0,
-      registeredAt: new Date().toISOString(),
-    };
-    saveFursaUser(user);
-    window.dispatchEvent(new CustomEvent("fursahub-user-updated"));
-    navigate({ to: "/payment" });
+    const id = crypto.randomUUID();
+    const activationFee = ACTIVATION_FEES[form.service];
+    try {
+      await registerOnServer({ data: { id, name: form.name, username: form.username, phone: form.phone, email: form.email, country: form.country, service: form.service } });
+      const user: FursaUser = { id, ...form, activationFee, paid: false, balance: 0, chats: 0, registeredAt: new Date().toISOString() };
+      saveFursaUser(user);
+      window.dispatchEvent(new CustomEvent("fursahub-user-updated"));
+      navigate({ to: "/payment" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Imeshindikana kuhifadhi usajili.");
+    }
   }
 
   return (
@@ -87,7 +91,7 @@ function RegisterPage() {
             <div className="mb-6 flex items-center justify-between gap-3">
               <div>
                 <h1 className="text-2xl font-bold text-k-slate-900">Create Account</h1>
-                <p className="mt-1 text-xs text-k-slate-500">Hatua 1 kati ya 2 · Activation fee TZS {ACTIVATION_FEE.toLocaleString()}</p>
+                <p className="mt-1 text-xs text-k-slate-500">Hatua 1 kati ya 2 · Chagua huduma yako</p>
               </div>
               <span className="rounded-full bg-k-green-50 px-3 py-1 text-xs font-bold text-k-green-800">FursaHub</span>
             </div>
@@ -99,10 +103,11 @@ function RegisterPage() {
               <Field label="Username"><input className="k-field focus:k-field-focus" placeholder="user_01" required value={form.username} onChange={(e) => set("username")(e.target.value.replace(/[^a-zA-Z0-9]/g, ""))} /></Field>
               <Field label="Phone Number"><input className="k-field focus:k-field-focus" placeholder="06XXXXXXXX" inputMode="tel" required value={form.phone} onChange={(e) => set("phone")(e.target.value.replace(/[^0-9+]/g, ""))} /></Field>
               <Field label="Email Address"><input type="email" className="k-field focus:k-field-focus" placeholder="name@mail.com" required value={form.email} onChange={(e) => set("email")(e.target.value)} /></Field>
+              <div className="md:col-span-2"><Field label="Huduma unayotaka kutumia"><select className="k-field focus:k-field-focus" value={form.service} onChange={(e) => set("service")(e.target.value)}>{(Object.keys(SERVICE_LABELS) as ActivationService[]).map((s) => <option key={s} value={s}>{SERVICE_LABELS[s]} — TZS {ACTIVATION_FEES[s].toLocaleString()}</option>)}</select></Field></div>
               <div className="md:col-span-2"><Field label="Country"><select className="k-field focus:k-field-focus" value={form.country} onChange={(e) => set("country")(e.target.value)}>{COUNTRIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}</select></Field></div>
               <Field label="Password"><div className="relative"><input type={showPass ? "text" : "password"} className="k-field focus:k-field-focus pr-16" placeholder="••••••••" required minLength={6} value={form.password} onChange={(e) => set("password")(e.target.value)} /><button type="button" onClick={() => setShowPass((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-k-slate-500">{showPass ? "Ficha" : "Onyesha"}</button></div></Field>
               <Field label="Confirm Password"><input type="password" className="k-field focus:k-field-focus" placeholder="••••••••" required value={form.confirm} onChange={(e) => set("confirm")(e.target.value)} /></Field>
-              <div className="md:col-span-2"><button type="submit" className="k-btn hover:bg-k-indigo-dark">Jisajili na Endelea</button><p className="mt-3 text-center text-xs text-k-slate-500">Taarifa hizi zitasave kwenye kifaa hiki tu (Local Storage).</p></div>
+              <div className="md:col-span-2"><button type="submit" className="k-btn hover:bg-k-indigo-dark">Jisajili na Endelea</button><p className="mt-3 text-center text-xs text-k-slate-500">Taarifa za akaunti na payment request zitawekwa kwenye database ya FursaHub.</p></div>
             </form>
           </section>
         </div>
