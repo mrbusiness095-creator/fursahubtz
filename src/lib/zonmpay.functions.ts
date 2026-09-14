@@ -103,6 +103,8 @@ export const startZonmPayPayment = createServerFn({ method: "POST" })
       const zonReference = String(response?.reference ?? response?.data?.reference ?? response?.payment?.reference ?? "");
       const status = String(response?.status ?? response?.data?.status ?? "PROCESSING").toUpperCase();
       const providerJson = JSON.stringify(response);
+      const immediateFailure = ["FAILED", "REJECTED", "CANCELLED", "CUSTOMER_REJECTED"].includes(status);
+      const pushedTo = phone;
 
       await database.sql`
         UPDATE payment_requests
@@ -115,7 +117,17 @@ export const startZonmPayPayment = createServerFn({ method: "POST" })
         VALUES (${crypto.randomUUID()}, ${paymentId}, ${"Payment request mpya"}, ${`User ameanzisha malipo ya TZS ${fee.toLocaleString()}.`}, ${false})
       `;
 
-      return { paymentId, reference: zonReference || orderRef, status, message: "USSD Push imetumwa. Ingiza PIN kwenye simu yako, kisha bonyeza NIMELIPIA." };
+      if (immediateFailure) {
+        throw new Error(response?.message ?? response?.error ?? `ZonmPay imekataa kuanzisha push (${status}).`);
+      }
+
+      return {
+        paymentId,
+        reference: zonReference || orderRef,
+        status,
+        pushedTo,
+        message: `USSD Push imetumwa kwenye ${phone}. Angalia simu yako, weka PIN, kisha tumia sehemu ya NIMELIPIA hapa chini.`,
+      };
     } catch (error) {
       await database.sql`
         UPDATE payment_requests
