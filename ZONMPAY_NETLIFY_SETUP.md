@@ -1,42 +1,59 @@
-# FursaHub — ZonmPay + Admin Setup
+# FursaHub + ZonmPay + Netlify Database
 
-## 1. Supabase
-Run `supabase.schema.sql` in Supabase SQL Editor.
+FursaHub sasa inatumia **Netlify Database (Postgres)** moja kwa moja; hakuna Supabase inayohitajika.
 
-## 2. Netlify Environment Variables
-Add these server-side variables:
+## 1. Netlify Database
 
-- `ZONMPAY_API_KEY` = your ZonmPay live key
-- `ZONMPAY_WEBHOOK_SECRET` = the `whsec_...` secret shown after registering the webhook
-- `SUPABASE_URL` = your Supabase project URL
-- `SUPABASE_SERVICE_ROLE_KEY` = Supabase service role key
-- `ADMIN_PASSWORD` = strong admin password
+Kwenye Netlify project yako:
 
-Do not use `VITE_` for any secret.
+**Project configuration → Data & storage → Database**
 
-## 3. ZonmPay webhook
-In ZonmPay Developer settings register:
+Hakikisha production database iko active. Netlify Database ni Postgres iliyounganishwa moja kwa moja na project. Package ya `@netlify/database` ndiyo inayotumika na app, na Netlify huapply migrations zilizo ndani ya `netlify/database/migrations/` wakati wa deploy.
 
-`https://YOUR-DOMAIN/.netlify/functions/zonmpay-webhook`
+## 2. Environment Variables
 
-Copy the generated `whsec_...` secret into `ZONMPAY_WEBHOOK_SECRET` in Netlify.
+Weka hizi kwenye Netlify → Project configuration → Environment variables:
 
-## 4. Deploy
-Netlify build command:
+- `ZONMPAY_API_KEY` = API key yako ya ZonmPay (server-only)
+- `ZONMPAY_WEBHOOK_SECRET` = webhook signing secret kutoka ZonmPay (server-only)
+- `ADMIN_PASSWORD` = password ya `/admin`
 
-`bun run build`
+Usiweke `ZONMPAY_API_KEY` kwenye `VITE_...` na usiiweke ndani ya source code.
 
-Publish directory:
+`NETLIFY_DB_URL` hutolewa na Netlify Database. Usii-copy kwenye repository.
 
-`dist`
+## 3. Database tables
 
-After adding/changing environment variables, trigger a new deploy.
+Migration hii tayari ipo:
 
-## 5. Admin
-Open:
+`netlify/database/migrations/20260914150000_create_fursahub_tables.sql`
 
-`https://YOUR-DOMAIN/admin`
+Itatengeneza:
 
-Use the password from `ADMIN_PASSWORD`.
+- `fursa_users`
+- `payment_requests`
+- `admin_notifications`
 
-Admin sees payment requests, ZonmPay references, user details and notifications. Approving a payment activates the user.
+## 4. ZonmPay webhook
+
+Weka webhook URL kwenye ZonmPay:
+
+`https://DOMAIN-YAKO.NETLIFY.APP/.netlify/functions/zonmpay-webhook`
+
+Tumia signing secret ya webhook kwenye `ZONMPAY_WEBHOOK_SECRET`.
+
+Webhook inasikiliza `payment.confirmed` na `payment.failed`, kisha ina-update Netlify Database.
+
+## 5. Activation fees
+
+- Chat na Kulipwa: TZS 14,000
+- Mikopo: TZS 15,000
+- Ajira Nje: TZS 16,000
+
+Flow ni: Register → USSD Push ya ZonmPay → user `NIMELIPIA` → admin anaona request → admin approve/reject → account ina-activate.
+
+## 6. Admin
+
+Fungua `/admin`, tumia `ADMIN_PASSWORD` uliyoweka kwenye Netlify.
+
+> Muhimu: API key ya ZonmPay iliyowahi kuwekwa kwenye chat inapaswa ku-rotate/revoke kwa sababu secret keys hazipaswi kushirikiwa hadharani. Weka key mpya tu kwenye Netlify Environment Variables.

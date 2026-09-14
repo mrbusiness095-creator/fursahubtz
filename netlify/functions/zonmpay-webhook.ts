@@ -1,24 +1,10 @@
 import crypto from "node:crypto";
+import { db } from "../../src/lib/netlify-db";
 
 function required(name: string) {
   const value = process.env[name];
   if (!value) throw new Error(`${name} haijawekwa.`);
   return value;
-}
-
-async function db(path: string, init: RequestInit = {}) {
-  const url = required("SUPABASE_URL").replace(/\/$/, "");
-  const key = required("SUPABASE_SERVICE_ROLE_KEY");
-  const headers = new Headers(init.headers);
-  headers.set("apikey", key);
-  headers.set("Authorization", `Bearer ${key}`);
-  headers.set("Content-Type", "application/json");
-  headers.set("Prefer", headers.get("Prefer") ?? "return=representation");
-  const response = await fetch(`${url}/rest/v1/${path}`, { ...init, headers });
-  const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
-  if (!response.ok) throw new Error(data?.message ?? "Supabase error");
-  return data;
 }
 
 function validSignature(raw: string, header: string | null, secret: string) {
@@ -55,33 +41,38 @@ export default async (request: Request) => {
   const customerReference = event.customerReference ?? event.reference;
   if (!customerReference) return new Response("ok", { status: 200 });
 
-  const paymentRows = await db(`payment_requests?customer_reference=eq.${encodeURIComponent(customerReference)}&select=*`);
-  const payment = paymentRows?.[0];
+  const database = db();
+  const paymentRows = await database.sql`
+    SELECT * FROM payment_requests WHERE customer_reference = ${customerReference} LIMIT 1
+  `;
+  const payment = paymentRows[0];
   if (!payment) return new Response("ok", { status: 200 });
 
   if (event.event === "payment.confirmed") {
-    await db(`payment_requests?id=eq.${encodeURIComponent(payment.id)}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        payment_status: String(event.status ?? "PAID").toUpperCase(),
-        zonmpay_reference: event.reference ?? payment.zonmpay_reference,
-        provider_response: event,
-        payer_phone: event.customer?.phoneNumber ?? payment.payer_phone,
-      }),
-    });
-    await db("admin_notifications", {
-      method: "POST",
-      body: JSON.stringify({ payment_id: payment.id, title: "ZonmPay payment confirmed", message: `Malipo ya TZS ${Number(event.amount ?? payment.amount).toLocaleString()} yamethibitishwa na ZonmPay.`, is_read: false }),
-    });
+    await database.sql`
+      UPDATE payment_requests
+      SET payment_status = ${String(event.status ?? "PAID").toUpperCase()},
+          zonmpay_reference = ${event.reference ?? payment.zonmpay_reference},
+          provider_response = ${raw}::jsonb,
+          payer_phone = ${event.customer?.phoneNumber ?? payment.payer_phone}
+      WHERE id = ${payment.id}
+    `;
+    await database.sql`
+      INSERT INTO admin_notifications (id, payment_id, title, message, is_read)
+      VALUES (${crypto.randomUUID()}, ${payment.id}, ${"ZonmPay payment confirmed"}, ${`Malipo ya TZS ${Number(event.amount ?? payment.amount).toLocaleString()} yamethibitishwa na ZonmPay.`}, ${false})
+    `;
   } else if (event.event === "payment.failed") {
-    await db(`payment_requests?id=eq.${encodeURIComponent(payment.id)}`, {
-      method: "PATCH",
-      body: JSON.stringify({ payment_status: String(event.status ?? "FAILED").toUpperCase(), failure_reason: event.failureReason ?? null, provider_response: event }),
-    });
-    await db("admin_notifications", {
-      method: "POST",
-      body: JSON.stringify({ payment_id: payment.id, title: "ZonmPay payment failed", message: event.failureReason ?? "Malipo hayajakamilika.", is_read: false }),
-    });
+    await database.sql`
+      UPDATE payment_requests
+      SET payment_status = ${String(event.status ?? "FAILED").toUpperCase()},
+          failure_reason = ${event.failureReason ?? null},
+          provider_response = ${raw}::jsonb
+      WHERE id = ${payment.id}
+    `;
+    await database.sql`
+      INSERT INTO admin_notifications (id, payment_id, title, message, is_read)
+      VALUES (${crypto.randomUUID()}, ${payment.id}, ${"ZonmPay payment failed"}, ${event.failureReason ?? "Malipo hayajakamilika."}, ${false})
+    `;
   }
 
   return new Response("ok", { status: 200 });

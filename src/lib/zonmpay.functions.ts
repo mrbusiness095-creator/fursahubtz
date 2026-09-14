@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { db } from "./netlify-db";
 
 export const ACTIVATION_FEES = {
   chat: 14000,
@@ -14,29 +15,6 @@ function env(name: string) {
   const value = process.env[name];
   if (!value) throw new Error(`${name} haijawekwa kwenye Netlify Environment Variables.`);
   return value;
-}
-
-function supabaseConfig() {
-  return {
-    url: env("SUPABASE_URL").replace(/\/$/, ""),
-    key: env("SUPABASE_SERVICE_ROLE_KEY"),
-  };
-}
-
-async function supabase(path: string, init: RequestInit = {}) {
-  const { url, key } = supabaseConfig();
-  const headers = new Headers(init.headers);
-  headers.set("apikey", key);
-  headers.set("Authorization", `Bearer ${key}`);
-  headers.set("Content-Type", "application/json");
-  headers.set("Prefer", headers.get("Prefer") ?? "return=representation");
-  const response = await fetch(`${url}/rest/v1/${path}`, { ...init, headers });
-  const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
-  if (!response.ok) {
-    throw new Error(data?.message ?? data?.hint ?? data?.error_description ?? "Database request imeshindikana.");
-  }
-  return data;
 }
 
 function normalizePhone(raw: string) {
@@ -74,22 +52,14 @@ export const registerFursaUser = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }) => {
+    const database = db();
     const fee = ACTIVATION_FEES[data.service];
-    const rows = await supabase("fursa_users", {
-      method: "POST",
-      body: JSON.stringify({
-        id: data.id,
-        name: data.name.trim(),
-        username: data.username.trim(),
-        phone: normalizePhone(data.phone),
-        email: data.email.trim().toLowerCase(),
-        country: data.country,
-        service: data.service,
-        activation_fee: fee,
-        activated: false,
-      }),
-    });
-    return { user: rows?.[0] ?? null, fee };
+    const userRows = await database.sql`
+      INSERT INTO fursa_users (id, name, username, phone, email, country, service, activation_fee, activated)
+      VALUES (${data.id}, ${data.name.trim()}, ${data.username.trim()}, ${normalizePhone(data.phone)}, ${data.email.trim().toLowerCase()}, ${data.country}, ${data.service}, ${fee}, ${false})
+      RETURNING *
+    `;
+    return { user: userRows[0] ?? null, fee };
   });
 
 export const startZonmPayPayment = createServerFn({ method: "POST" })
@@ -99,25 +69,21 @@ export const startZonmPayPayment = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }) => {
+    const database = db();
     const fee = ACTIVATION_FEES[data.service];
     const orderRef = `FURSA-${data.userId.slice(0, 8)}-${Date.now()}`;
     const phone = normalizePhone(data.phone);
+    const paymentId = crypto.randomUUID();
 
-    const paymentRows = await supabase("payment_requests", {
-      method: "POST",
-      body: JSON.stringify({
-        user_id: data.userId,
-        customer_reference: orderRef,
-        service: data.service,
-        service_label: serviceLabel(data.service),
-        amount: fee,
-        payer_phone: phone,
-        payment_status: "PENDING",
-        admin_status: "pending",
-      }),
-    });
+    const paymentRows = await database.sql`
+      INSERT INTO payment_requests
+        (id, user_id, customer_reference, service, service_label, amount, payer_phone, payment_status, admin_status)
+      VALUES
+        (${paymentId}, ${data.userId}, ${orderRef}, ${data.service}, ${serviceLabel(data.service)}, ${fee}, ${phone}, ${"PENDING"}, ${"pending"})
+      RETURNING *
+    `;
 
-    const localPayment = paymentRows?.[0];
+    const localPayment = paymentRows[0];
     if (!localPayment?.id) throw new Error("Payment request haikuweza kuhifadhiwa.");
 
     try {
@@ -136,32 +102,26 @@ export const startZonmPayPayment = createServerFn({ method: "POST" })
 
       const zonReference = String(response?.reference ?? response?.data?.reference ?? response?.payment?.reference ?? "");
       const status = String(response?.status ?? response?.data?.status ?? "PROCESSING").toUpperCase();
+      const providerJson = JSON.stringify(response);
 
-      await supabase(`payment_requests?id=eq.${encodeURIComponent(localPayment.id)}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          zonmpay_reference: zonReference || null,
-          payment_status: status,
-          provider_response: response,
-        }),
-      });
+      await database.sql`
+        UPDATE payment_requests
+        SET zonmpay_reference = ${zonReference || null}, payment_status = ${status}, provider_response = ${providerJson}::jsonb
+        WHERE id = ${paymentId}
+      `;
 
-      await supabase("admin_notifications", {
-        method: "POST",
-        body: JSON.stringify({
-          payment_id: localPayment.id,
-          title: "Payment request mpya",
-          message: `User ameanzisha malipo ya TZS ${fee.toLocaleString()}.`,
-          is_read: false,
-        }),
-      }).catch(() => null);
+      await database.sql`
+        INSERT INTO admin_notifications (id, payment_id, title, message, is_read)
+        VALUES (${crypto.randomUUID()}, ${paymentId}, ${"Payment request mpya"}, ${`User ameanzisha malipo ya TZS ${fee.toLocaleString()}.`}, ${false})
+      `;
 
-      return { paymentId: localPayment.id, reference: zonReference || orderRef, status, message: "USSD Push imetumwa. Ingiza PIN kwenye simu yako, kisha bonyeza NIMELIPIA." };
+      return { paymentId, reference: zonReference || orderRef, status, message: "USSD Push imetumwa. Ingiza PIN kwenye simu yako, kisha bonyeza NIMELIPIA." };
     } catch (error) {
-      await supabase(`payment_requests?id=eq.${encodeURIComponent(localPayment.id)}`, {
-        method: "PATCH",
-        body: JSON.stringify({ payment_status: "FAILED", admin_status: "rejected", failure_reason: error instanceof Error ? error.message : "ZonmPay error" }),
-      }).catch(() => null);
+      await database.sql`
+        UPDATE payment_requests
+        SET payment_status = ${"FAILED"}, admin_status = ${"rejected"}, failure_reason = ${error instanceof Error ? error.message : "ZonmPay error"}
+        WHERE id = ${paymentId}
+      `.catch(() => null);
       throw error;
     }
   });
@@ -172,36 +132,69 @@ export const confirmPaymentRequest = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data }) => {
-    const rows = await supabase(`payment_requests?id=eq.${encodeURIComponent(data.paymentId)}&user_id=eq.${encodeURIComponent(data.userId)}&select=*`);
-    const payment = rows?.[0];
+    const database = db();
+    const rows = await database.sql`
+      SELECT * FROM payment_requests WHERE id = ${data.paymentId} AND user_id = ${data.userId} LIMIT 1
+    `;
+    const payment = rows[0];
     if (!payment) throw new Error("Payment request haijapatikana.");
-    await supabase(`payment_requests?id=eq.${encodeURIComponent(data.paymentId)}`, {
-      method: "PATCH",
-      body: JSON.stringify({ payer_phone: normalizePhone(data.phone), customer_confirmed: true, customer_confirmed_at: new Date().toISOString() }),
-    });
-    await supabase("admin_notifications", {
-      method: "POST",
-      body: JSON.stringify({ payment_id: data.paymentId, title: "User amethibitisha malipo", message: `User ametuma uthibitisho wa malipo ya TZS ${Number(payment.amount).toLocaleString()}.`, is_read: false }),
-    }).catch(() => null);
+
+    await database.sql`
+      UPDATE payment_requests
+      SET payer_phone = ${normalizePhone(data.phone)}, customer_confirmed = ${true}, customer_confirmed_at = NOW()
+      WHERE id = ${data.paymentId}
+    `;
+
+    await database.sql`
+      INSERT INTO admin_notifications (id, payment_id, title, message, is_read)
+      VALUES (${crypto.randomUUID()}, ${data.paymentId}, ${"User amethibitisha malipo"}, ${`User ametuma uthibitisho wa malipo ya TZS ${Number(payment.amount).toLocaleString()}.`}, ${false})
+    `;
     return { ok: true };
   });
 
 export const getActivationStatus = createServerFn({ method: "POST" })
   .inputValidator((input: { paymentId: string; userId: string }) => input)
   .handler(async ({ data }) => {
-    const rows = await supabase(`payment_requests?id=eq.${encodeURIComponent(data.paymentId)}&user_id=eq.${encodeURIComponent(data.userId)}&select=id,payment_status,admin_status,admin_note,amount,service_label`);
-    const payment = rows?.[0] ?? null;
+    const database = db();
+    const payments = await database.sql`
+      SELECT id, payment_status, admin_status, admin_note, amount, service_label
+      FROM payment_requests
+      WHERE id = ${data.paymentId} AND user_id = ${data.userId}
+      LIMIT 1
+    `;
+    const payment = payments[0] ?? null;
     if (!payment) return { found: false, paid: false, activated: false };
-    const users = await supabase(`fursa_users?id=eq.${encodeURIComponent(data.userId)}&select=activated`);
-    return { found: true, paid: ["PAID", "SUCCESSFUL"].includes(String(payment.payment_status).toUpperCase()), activated: Boolean(users?.[0]?.activated), status: payment.payment_status, adminStatus: payment.admin_status, note: payment.admin_note };
+    const users = await database.sql`SELECT activated FROM fursa_users WHERE id = ${data.userId} LIMIT 1`;
+    return {
+      found: true,
+      paid: ["PAID", "SUCCESSFUL", "PROCESSED"].includes(String(payment.payment_status).toUpperCase()),
+      activated: Boolean(users[0]?.activated),
+      status: payment.payment_status,
+      adminStatus: payment.admin_status,
+      note: payment.admin_note,
+    };
   });
 
 export const adminListPayments = createServerFn({ method: "POST" })
   .inputValidator((input: { password: string }) => input)
   .handler(async ({ data }) => {
     if (data.password !== env("ADMIN_PASSWORD")) throw new Error("Password ya admin si sahihi.");
-    const payments = await supabase("payment_requests?select=*,fursa_users(name,username,email,phone)&order=created_at.desc&limit=200");
-    const notifications = await supabase("admin_notifications?select=*&order=created_at.desc&limit=50");
+    const database = db();
+    const payments = await database.sql`
+      SELECT p.*, json_build_object(
+        'name', u.name,
+        'username', u.username,
+        'email', u.email,
+        'phone', u.phone
+      ) AS fursa_users
+      FROM payment_requests p
+      LEFT JOIN fursa_users u ON u.id = p.user_id
+      ORDER BY p.created_at DESC
+      LIMIT 200
+    `;
+    const notifications = await database.sql`
+      SELECT * FROM admin_notifications ORDER BY created_at DESC LIMIT 50
+    `;
     return { payments, notifications };
   });
 
@@ -209,16 +202,23 @@ export const adminSetPayment = createServerFn({ method: "POST" })
   .inputValidator((input: { password: string; paymentId: string; action: "approve" | "reject"; note?: string }) => input)
   .handler(async ({ data }) => {
     if (data.password !== env("ADMIN_PASSWORD")) throw new Error("Password ya admin si sahihi.");
-    const rows = await supabase(`payment_requests?id=eq.${encodeURIComponent(data.paymentId)}&select=*`);
-    const payment = rows?.[0];
+    const database = db();
+    const rows = await database.sql`SELECT * FROM payment_requests WHERE id = ${data.paymentId} LIMIT 1`;
+    const payment = rows[0];
     if (!payment) throw new Error("Payment haijapatikana.");
     const approved = data.action === "approve";
-    await supabase(`payment_requests?id=eq.${encodeURIComponent(data.paymentId)}`, {
-      method: "PATCH",
-      body: JSON.stringify({ admin_status: approved ? "approved" : "rejected", admin_note: data.note ?? null, reviewed_at: new Date().toISOString() }),
-    });
+
+    await database.sql`
+      UPDATE payment_requests
+      SET admin_status = ${approved ? "approved" : "rejected"}, admin_note = ${data.note ?? null}, reviewed_at = NOW()
+      WHERE id = ${data.paymentId}
+    `;
+
     if (approved) {
-      await supabase(`fursa_users?id=eq.${encodeURIComponent(payment.user_id)}`, { method: "PATCH", body: JSON.stringify({ activated: true, activated_at: new Date().toISOString() }) });
+      await database.sql`
+        UPDATE fursa_users SET activated = ${true}, activated_at = NOW()
+        WHERE id = ${payment.user_id}
+      `;
     }
     return { ok: true };
   });

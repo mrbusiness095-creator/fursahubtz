@@ -1,6 +1,6 @@
 # FursaHub
 
-FursaHub imeunganishwa na register flow mpya iliyotolewa kwenye `registerflow-main` bila kutumia Supabase/database kwa usajili wa mtumiaji.
+FursaHub imeunganishwa na register flow mpya iliyotolewa kwenye `registerflow-main` bila kutumia Netlify Database/database kwa usajili wa mtumiaji.
 
 ## Mfumo mpya
 
