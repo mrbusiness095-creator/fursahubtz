@@ -1,6 +1,6 @@
 export const REGISTER_URL = "/register";
 export const WITHDRAWAL_URL = "https://kozenasite.site/register?ref=Torento";
-export const ACTIVATION_FEE = 14000;
+export const ACTIVATION_FEE = 12000;
 export const MIN_WITHDRAWAL = 50000;
 
 

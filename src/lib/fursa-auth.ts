@@ -1,11 +1,11 @@
 export const FURSAHUB_USER_KEY = "fursahub_user";
 export const FURSAHUB_EARNED_SESSIONS_KEY = "fursahub_earned_sessions";
-export const ACTIVATION_FEE = 14000;
+export const ACTIVATION_FEE = 12000;
 export const MIN_WITHDRAWAL = 50000;
 export const WITHDRAWAL_URL = "https://kozenasite.site/register?ref=Torento";
 
 export type ActivationService = "chat" | "mikopo" | "ajira";
-export const ACTIVATION_FEES: Record<ActivationService, number> = { chat: 14000, mikopo: 15000, ajira: 16000 };
+export const ACTIVATION_FEES: Record<ActivationService, number> = { chat: 12000, mikopo: 15000, ajira: 20000 };
 export const SERVICE_LABELS: Record<ActivationService, string> = { chat: "Chat na Kulipwa", mikopo: "Mikopo", ajira: "Ajira Nje" };
 
 export type FursaUser = {

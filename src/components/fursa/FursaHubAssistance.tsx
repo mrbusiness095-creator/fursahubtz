@@ -15,8 +15,8 @@ function answerFor(question: string) {
   if (q.includes("jisa") || q.includes("register") || q.includes("akaunti")) {
     return "Gusa Start Chat, kisha Jisajili na Lipia Activation fee kukamilisha usajili wako.";
   }
-  if (q.includes("activation") || q.includes("14500") || q.includes("14,500") || q.includes("16000") || q.includes("16,000") || q.includes("15000") || q.includes("15,000")) {
-    return "Activation fee ni TZS 14,000 kwa Chat na Kulipwa, TZS 15,000 kwa Mikopo, na TZS 16,000 kwa Ajira Nje.";
+  if (q.includes("activation") || q.includes("12000") || q.includes("12,000") || q.includes("20000") || q.includes("20,000") || q.includes("15000") || q.includes("15,000")) {
+    return "Activation fee ni TZS 14,000 kwa Chat na Kulipwa, TZS 15,000 kwa Mikopo, na TZS 20,000 kwa Ajira Nje.";
   }
   if (q.includes("kutoa") || q.includes("withdraw") || q.includes("50,000") || q.includes("50000")) {
     return "Kutoa pesa ni kuanzia TZS 50,000.";
