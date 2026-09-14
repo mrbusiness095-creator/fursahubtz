@@ -31,7 +31,7 @@ function PaymentPage() {
     if (!user) { navigate({ to: "/register" }); return; }
     if (user.paid) { navigate({ to: "/dashboard" }); return; }
     setReady(true);
-    setPhone(user.phone);
+    setPhone("");
     setPaymentId(user.lastPaymentId ?? null);
     setReference(user.lastPaymentReference ?? null);
     return () => { if (timer.current) clearInterval(timer.current); };
@@ -76,12 +76,15 @@ function PaymentPage() {
     if (!user) { navigate({ to: "/register" }); return; }
 
     try {
-      const result = await startPayment({ data: { userId: user.id, phone: user.phone, service: user.service } });
+      if (!phone.trim()) {
+        setError("Weka namba ya simu unayotumia kulipia kwanza.");
+        return;
+      }
+      const result = await startPayment({ data: { userId: user.id, phone, service: user.service } });
       updateFursaUser({ lastPaymentId: result.paymentId, lastPaymentReference: result.reference });
       setPaymentId(result.paymentId);
       setReference(result.reference);
-      setPushNumber(result.pushedTo ?? user.phone);
-      setPhone("");
+      setPushNumber(result.pushedTo ?? phone);
       setPhase("push-sent");
       setMessage(result.message);
     } catch (err) {
@@ -154,9 +157,26 @@ function PaymentPage() {
             {message && <div className="mb-4 rounded-xl border border-k-green-200 bg-k-green-50 px-4 py-3 text-sm text-k-green-900">{message}</div>}
 
             {(phase === "ready" || phase === "failed") && (
-              <button type="button" onClick={onPayNow} className="k-btn-green w-full text-base">
-                💳 LIPA SASA — TUMA USSD PUSH
-              </button>
+              <div className="space-y-3">
+                <div className="rounded-2xl border border-k-green-200 bg-k-green-50 p-4">
+                  <p className="mb-2 text-sm font-extrabold text-k-green-900">WEKA NAMBA YA SIMU UNAYOTUMIA KULIPIA</p>
+                  <p className="mb-3 text-xs text-k-green-800">Weka namba ya M-Pesa utakayotumia kupokea USSD Push. Ukiweka 07..., mfumo utaibadilisha kuwa +255... moja kwa moja.</p>
+                  <input
+                    id="push-phone"
+                    type="tel"
+                    inputMode="numeric"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, ""))}
+                    placeholder="0712345678"
+                    className="w-full rounded-xl border border-k-green-200 bg-white px-4 py-3 text-base outline-none focus:border-k-green-500"
+                  />
+                  <p className="mt-2 text-[11px] text-k-green-700">Mfano: 0743871339 → +255743871339</p>
+                </div>
+                <button type="button" onClick={onPayNow} className="k-btn-green w-full text-base">
+                  💳 LIPA SASA — TUMA USSD PUSH
+                </button>
+              </div>
             )}
 
             {(phase === "push-sent" || phase === "verifying") && (
@@ -168,7 +188,7 @@ function PaymentPage() {
 
                 <form onSubmit={onConfirm} className="border-t border-k-slate-100 pt-5">
                   <h3 className="mb-1 font-extrabold">Baada ya kulipia</h3>
-                  <p className="mb-4 text-xs text-k-slate-500">Weka namba ya simu uliyotumia kulipia, kisha bonyeza NIMELIPIA.</p>
+                  <p className="mb-4 text-xs text-k-slate-500">Baada ya kulipia, hakikisha umeweka namba ile ile uliyotumia kulipia, kisha bonyeza NIMELIPIA.</p>
                   <label className="mb-1 block text-xs font-bold text-k-slate-500" htmlFor="paid-phone">Namba ya simu uliyolipia</label>
                   <input
                     id="paid-phone"

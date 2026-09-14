@@ -94,6 +94,7 @@ export const startZonmPayPayment = createServerFn({ method: "POST" })
           description: `FursaHub Activation - ${serviceLabel(data.service)}`,
           amount: fee,
           service: "mobile",
+          provider: "mpesa",
           account: phone,
           amountType: "FULL",
           push: true,
@@ -126,7 +127,7 @@ export const startZonmPayPayment = createServerFn({ method: "POST" })
         reference: zonReference || orderRef,
         status,
         pushedTo,
-        message: `USSD Push imetumwa kwenye ${phone}. Angalia simu yako, weka PIN, kisha tumia sehemu ya NIMELIPIA hapa chini.`,
+        message: `USSD Push imetumwa kwenye +${phone}. Angalia simu hiyo, weka PIN, kisha tumia sehemu ya NIMELIPIA hapa chini.`,
       };
     } catch (error) {
       await database.sql`
